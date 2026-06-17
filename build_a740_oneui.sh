@@ -53,15 +53,17 @@ apply_patches(){
     sed -i 's/native_buffer->handle->/((const native_handle_t *)native_buffer->handle)->/g' src/vulkan/runtime/vk_android.c 2>/dev/null || true
     sed -i 's/anb->handle->/((const native_handle_t *)anb->handle)->/g' src/vulkan/runtime/vk_android.c 2>/dev/null || true
 
-    # Add IMPLEMENTATION_DEFINED case (Samsung camera) after B8G8R8A8
-    sed -i '/case AHARDWAREBUFFER_FORMAT_B8G8R8A8_UNORM:/a\   case AHARDWAREBUFFER_FORMAT_IMPLEMENTATION_DEFINED:\n      return VK_FORMAT_R8G8B8A8_UNORM;' src/vulkan/runtime/vk_android.c 2>/dev/null || true
+    # Add IMPLEMENTATION_DEFINED (Samsung camera) + YUV video format mappings in vk_ahb_format_to_image_format
+    sed -i '/case AHARDWAREBUFFER_FORMAT_B8G8R8A8_UNORM:/a\   case AHARDWAREBUFFER_FORMAT_IMPLEMENTATION_DEFINED:\n      return VK_FORMAT_R8G8B8A8_UNORM;\n   case 0x23:\n      return VK_FORMAT_G8_B8R8_2PLANE_420_UNORM;\n   case 0x32315659:\n      return VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM;\n   case 0x36:\n      return VK_FORMAT_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16;' src/vulkan/runtime/vk_android.c 2>/dev/null || true
 
-    # For Skia compatibility: return RGBA for ANY unknown AHB format (YUV, etc.)
+    # Add reverse YUV mappings in vk_image_format_to_ahb_format (after B8G8R8A8_UNORM;)
+    sed -i '/AHARDWAREBUFFER_FORMAT_B8G8R8A8_UNORM;/a\   case VK_FORMAT_G8_B8R8_2PLANE_420_UNORM:\n      return 0x23;\n   case VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM:\n      return 0x32315659;\n   case VK_FORMAT_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16:\n      return 0x36;' src/vulkan/runtime/vk_android.c 2>/dev/null || true
+
+    # For Skia compatibility: return RGBA for ANY unknown AHB format
     sed -i '/^   default:$/{n;s/return VK_FORMAT_UNDEFINED/return VK_FORMAT_R8G8B8A8_UNORM/;}' src/vulkan/runtime/vk_android.c 2>/dev/null || true
 
-    # Query formatFeatures for p->format (RGBA) instead of external_format (YUV multi-planar)
-    # so Skia gets proper SAMPLED_IMAGE_BIT for AutoBackendTextureRelease
-    sed -i 's/external_format, &format_properties);/p->format, \&format_properties);/' src/vulkan/runtime/vk_android.c 2>/dev/null || true
+    # Set p->format at finish: for when external format path succeeds (non-Samsung)
+    sed -i '/^finish:/i\   p->format = external_format;' src/vulkan/runtime/vk_android.c 2>/dev/null || true
 }
 
 build_mesa(){
