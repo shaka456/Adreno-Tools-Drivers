@@ -53,19 +53,7 @@ apply_patches(){
     sed -i 's/native_buffer->handle->/((const native_handle_t *)native_buffer->handle)->/g' src/vulkan/runtime/vk_android.c 2>/dev/null || true
     sed -i 's/anb->handle->/((const native_handle_t *)anb->handle)->/g' src/vulkan/runtime/vk_android.c 2>/dev/null || true
 
-    patch -p1 << 'EOPATCH'
-diff --git a/src/vulkan/runtime/vk_android.c b/src/vulkan/runtime/vk_android.c
-index 3ea4f2ce74a..8d11053378c 100644
---- a/src/vulkan/runtime/vk_android.c
-+++ b/src/vulkan/runtime/vk_android.c
-@@ -925,6 +925,7 @@ get_ahb_buffer_format_properties2(
-    }
-
-+   p->format = external_format;
- finish:
-
-    device->physical->dispatch_table.GetPhysicalDeviceFormatProperties2(
-EOPATCH
+    sed -i '/^finish:/i\   p->format = external_format;' src/vulkan/runtime/vk_android.c 2>/dev/null || true
 }
 
 build_mesa(){
