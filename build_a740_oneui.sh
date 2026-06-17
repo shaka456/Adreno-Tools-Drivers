@@ -58,6 +58,10 @@ apply_patches(){
 
     # For Skia compatibility: return RGBA for ANY unknown AHB format (YUV, etc.)
     sed -i '/^   default:$/{n;s/return VK_FORMAT_UNDEFINED/return VK_FORMAT_R8G8B8A8_UNORM/;}' src/vulkan/runtime/vk_android.c 2>/dev/null || true
+
+    # Query formatFeatures for p->format (RGBA) instead of external_format (YUV multi-planar)
+    # so Skia gets proper SAMPLED_IMAGE_BIT for AutoBackendTextureRelease
+    sed -i 's/external_format, &format_properties);/p->format, \&format_properties);/' src/vulkan/runtime/vk_android.c 2>/dev/null || true
 }
 
 build_mesa(){
