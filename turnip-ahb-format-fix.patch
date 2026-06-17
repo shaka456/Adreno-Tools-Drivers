@@ -1,0 +1,26 @@
+From: shaka456 <shaka456@users.noreply.github.com>
+Date: Wed, 17 Jun 2026 11:30:00 -0400
+Subject: [PATCH] Fix AHB format for Samsung OneUI camera
+
+Samsung camera allocates AHardwareBuffers with
+AHARDWAREBUFFER_FORMAT_IMPLEMENTATION_DEFINED.  When the DRM
+fourcc is resolved successfully, set p->format to the concrete
+external_format instead of leaving it as VK_FORMAT_UNDEFINED.
+
+This prevents a SIGSEGV in Skia's GrVkCaps::onGetReadSwizzle()
+when the camera app switches modes or records video.
+
+ src/vulkan/runtime/vk_android.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/vulkan/runtime/vk_android.c b/src/vulkan/runtime/vk_android.c
+index abcdef1..1234567 100644
+--- a/src/vulkan/runtime/vk_android.c
++++ b/src/vulkan/runtime/vk_android.c
+@@ -925,6 +925,7 @@ get_ahb_buffer_format_properties2(
+    }
+
++   p->format = external_format;
+ finish:
+
+    device->physical->dispatch_table.GetPhysicalDeviceFormatProperties2(
