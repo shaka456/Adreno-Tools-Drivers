@@ -2,15 +2,6 @@ name: Build Turnip A740 OneUI
 
 on:
   workflow_dispatch:
-    inputs:
-      mesa_commit:
-        description: 'Mesa commit/tag to build'
-        required: false
-        default: '3da4653d46'
-      build_type:
-        description: 'Build type (release/debug)'
-        required: false
-        default: 'release'
 
 permissions:
   contents: write
@@ -34,19 +25,17 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.ccache
-          key: ccache-${{ inputs.mesa_commit }}
+          key: ccache-fork-tu8-gen8
 
       - name: Run Build Script
         run: |
           chmod +x build_a740_oneui.sh
-          MESA_COMMIT="${{ inputs.mesa_commit }}" \
-          buildtype="${{ inputs.build_type }}" \
           ./build_a740_oneui.sh
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Turnip-A740-OneUI
+          name: Turnip-A740-OneUI-tu8
           path: turnip_workdir/Turnip-A740-OneUI-*.zip
           if-no-files-found: error
 

@@ -28,9 +28,10 @@ prepare_ndk(){
 clone_mesa(){
     cd "$workdir"
     rm -rf mesa
-    git clone https://gitlab.freedesktop.org/mesa/mesa.git mesa
+    git clone https://github.com/whitebelyash/mesa-tu8.git mesa --depth=1 --no-single-branch
     cd mesa
-    git checkout "$MESA_COMMIT"
+    git checkout origin/gen8
+    echo '#define TUGEN8_DRV_VERSION ""' > ./src/freedreno/vulkan/tu_version.h
 
     mkdir -p subprojects && cd subprojects
     rm -rf spirv-tools spirv-headers
