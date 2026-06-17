@@ -54,6 +54,8 @@ apply_patches(){
     sed -i 's/anb->handle->/((const native_handle_t *)anb->handle)->/g' src/vulkan/runtime/vk_android.c 2>/dev/null || true
 
     sed -i '/^finish:/i\   p->format = external_format;' src/vulkan/runtime/vk_android.c 2>/dev/null || true
+
+    sed -i '/case AHARDWAREBUFFER_FORMAT_B8G8R8A8_UNORM:/a\   case AHARDWAREBUFFER_FORMAT_IMPLEMENTATION_DEFINED:\n      return VK_FORMAT_R8G8B8A8_UNORM;' src/vulkan/runtime/vk_android.c 2>/dev/null || true
 }
 
 build_mesa(){
