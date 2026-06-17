@@ -1,0 +1,58 @@
+name: Build Turnip A740 OneUI
+
+on:
+  workflow_dispatch:
+    inputs:
+      mesa_commit:
+        description: 'Mesa commit/tag to build'
+        required: false
+        default: '3da4653d46'
+      build_type:
+        description: 'Build type (release/debug)'
+        required: false
+        default: 'release'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build patchelf unzip flex bison git perl \
+            python3-pip glslang-tools ccache
+          pip3 install --break-system-packages meson mako
+
+      - name: Setup ccache
+        uses: actions/cache@v4
+        with:
+          path: ~/.ccache
+          key: ccache-${{ inputs.mesa_commit }}
+
+      - name: Run Build Script
+        run: |
+          chmod +x build_a740_oneui.sh
+          MESA_COMMIT="${{ inputs.mesa_commit }}" \
+          buildtype="${{ inputs.build_type }}" \
+          ./build_a740_oneui.sh
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Turnip-A740-OneUI
+          path: turnip_workdir/Turnip-A740-OneUI-*.zip
+          if-no-files-found: error
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        if: github.ref_type == 'tag'
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: turnip_workdir/Turnip-A740-OneUI-*.zip
