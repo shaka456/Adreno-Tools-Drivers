@@ -77,7 +77,7 @@ build_mesa(){
     export STRIP=llvm-strip
     export LDFLAGS="-fuse-ld=lld"
     export CFLAGS="-D__ANDROID__ -Wno-error -Wno-deprecated-declarations"
-    export CXXFLAGS="-D__ANDROID__ -Wno-error -Wno-deprecated-declarations"
+    export CXXFLAGS="-D__ANDROID__ -Wno-error -Wno-deprecated-declarations -Wno-c++11-narrowing"
 
     cat <<EOF >android-aarch64.txt
 [binaries]
