@@ -145,6 +145,7 @@ package(){
     cp "$workdir/mesa/build-aarch64/src/freedreno/vulkan/libvulkan_freedreno.so" "$pkg_dir/vulkan.adreno.so"
     cd "$pkg_dir"
     patchelf --set-soname "vulkan.adreno.so" vulkan.adreno.so
+    llvm-strip --strip-all -o vulkan.adreno.so.stripped vulkan.adreno.so 2>/dev/null && mv vulkan.adreno.so.stripped vulkan.adreno.so || true
 
     GITHASH=$(cd "$workdir/mesa" && git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 
