@@ -53,8 +53,11 @@ apply_patches(){
     sed -i 's/native_buffer->handle->/((const native_handle_t *)native_buffer->handle)->/g' src/vulkan/runtime/vk_android.c 2>/dev/null || true
     sed -i 's/anb->handle->/((const native_handle_t *)anb->handle)->/g' src/vulkan/runtime/vk_android.c 2>/dev/null || true
 
-    # For Skia compatibility: return RGBA for any unknown/camera AHB format
-    sed -i 's/   default:\n      return VK_FORMAT_UNDEFINED;/   default:\n      return VK_FORMAT_R8G8B8A8_UNORM;/' src/vulkan/runtime/vk_android.c 2>/dev/null || true
+    # Add IMPLEMENTATION_DEFINED case (Samsung camera) after B8G8R8A8
+    sed -i '/case AHARDWAREBUFFER_FORMAT_B8G8R8A8_UNORM:/a\   case AHARDWAREBUFFER_FORMAT_IMPLEMENTATION_DEFINED:\n      return VK_FORMAT_R8G8B8A8_UNORM;' src/vulkan/runtime/vk_android.c 2>/dev/null || true
+
+    # For Skia compatibility: return RGBA for ANY unknown AHB format (YUV, etc.)
+    sed -i '/^   default:$/{n;s/return VK_FORMAT_UNDEFINED/return VK_FORMAT_R8G8B8A8_UNORM/;}' src/vulkan/runtime/vk_android.c 2>/dev/null || true
 }
 
 build_mesa(){
